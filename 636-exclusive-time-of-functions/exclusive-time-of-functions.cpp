@@ -1,42 +1,32 @@
-#include <iostream>
-#include <vector>
-#include <stack>
-#include <string>
-#include <sstream>
-#include <tuple>
+#include <bits/stdc++.h>
 using namespace std;
-
-tuple<int, string, int> parseLog(const string &log) {
-    stringstream ss(log);
-    string token;
-    vector<string> parts;
-    while (getline(ss, token, ':')) {
-        parts.push_back(token);
-    }
-    int function_id = stoi(parts[0]);
-    string status = parts[1];
-    int timestamp = stoi(parts[2]);
-    return {function_id, status, timestamp};
-}
 
 class Solution {
 public:
     vector<int> exclusiveTime(int n, vector<string>& logs) {
-        vector<int> res(n, 0);   
-        stack<pair<int, int>> st;       
-        int prevTime = 0;        
+        vector<int> res(n, 0);
+        stack<int> st;   // chỉ cần lưu function_id
+        int prevTime = 0;
 
         for (auto &log : logs) {
-            auto [id, status, time] = parseLog(log);
+            // parse log
+            stringstream ss(log);
+            string idStr, status, timeStr;
+            getline(ss, idStr, ':');
+            getline(ss, status, ':');
+            getline(ss, timeStr, ':');
+
+            int id = stoi(idStr);
+            int time = stoi(timeStr);
 
             if (status == "start") {
                 if (!st.empty()) {
-                    res[st.top().first] += time - prevTime;
+                    res[st.top()] += time - prevTime;
                 }
-                st.push({id, time});
+                st.push(id);
                 prevTime = time;
-            } else {
-                res[st.top().first] += time - prevTime + 1;
+            } else { // "end"
+                res[st.top()] += time - prevTime + 1;
                 st.pop();
                 prevTime = time + 1;
             }
